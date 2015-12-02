@@ -1,2 +1,2 @@
 # adventofcode
-Solutions for http://adventofcode.com/
+Haskell solutions to http://adventofcode.com/
