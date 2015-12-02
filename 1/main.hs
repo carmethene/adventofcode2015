@@ -13,6 +13,6 @@ floors = scanl step 0
 
 main = do
     instructions <- getLine
-    print $ position instructions
-    print $ elemIndex (-1) $ floors instructions
+    print $ "Final floor: " ++ show (position instructions)
+    print $ "Basement at: " ++ show (elemIndex (-1) $ floors instructions)
 
