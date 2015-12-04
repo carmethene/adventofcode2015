@@ -22,9 +22,9 @@ main = do
     instructions <- getLine
     let startHouse = (0,0)
     -- part 1
-    let presents = houses startHouse instructions
-    print $ "Num houses (1): " ++ show (length $ nub presents)
+    let presents = houses startHouse instructions in
+        print $ "Num houses (1): " ++ show (length $ nub presents)
     -- part 2
-    let splitPresents = houses startHouse ins1 ++ houses startHouse ins2 where (ins1, ins2) = split instructions
-    print $ "Num houses (2): " ++ show (length $ nub splitPresents)
+    let presents = houses startHouse ins1 ++ houses startHouse ins2 where (ins1, ins2) = split instructions in
+        print $ "Num houses (2): " ++ show (length $ nub presents)
 
