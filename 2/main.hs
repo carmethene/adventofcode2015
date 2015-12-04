@@ -4,9 +4,7 @@ import Data.List
 type Package = (Integer, Integer, Integer)
 
 stringToPackage :: String -> Package
-stringToPackage str = let [a,b,c] = splitOn "x" str
-                          [x,y,z] = sort [read a, read b, read c]
-                      in (x,y,z)
+stringToPackage str = let [x,y,z] = sort $ map read (splitOn "x" str) in (x,y,z)
 
 requiredPaper :: Package -> Integer
 requiredPaper (x,y,z) = area + slack where
