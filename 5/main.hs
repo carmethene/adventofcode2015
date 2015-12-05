@@ -4,8 +4,7 @@ countElements :: Eq a => [a] -> [a] -> Int
 countElements e xs = length $ filter (`elem` e) xs
 
 hasDoubleElement :: Eq a => [a] -> Bool
-hasDoubleElement (x:y:xys) = x == y || hasDoubleElement (y:xys)
-hasDoubleElement _ = False
+hasDoubleElement s = any (\x -> length x >= 2) (group s)
 
 hasInfix :: Eq a => [[a]] -> [a] -> Bool
 hasInfix i s = any (`isInfixOf` s) i 
