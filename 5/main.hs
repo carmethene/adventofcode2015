@@ -8,8 +8,7 @@ hasDoubleElement (x:y:xys) = x == y || hasDoubleElement (y:xys)
 hasDoubleElement _ = False
 
 hasInfix :: Eq a => [[a]] -> [a] -> Bool
-hasInfix (x:xs) ys = isInfixOf x ys || hasInfix xs ys
-hasInfix _ _ = False
+hasInfix i s = any (`isInfixOf` s) i 
 
 isNice1 :: String -> Bool
 isNice1 str =
