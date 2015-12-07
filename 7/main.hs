@@ -20,43 +20,42 @@ data Instruction =
 
 type Circuit = Map.Map Wire Instruction
 
-readInput :: String -> Input
-readInput i
-    | all isDigit i = Set (read i)
-    | otherwise     = Connect i
-
-readWire :: [String] -> Instruction
-readWire [x, "AND",    y] = And (readInput x) (readInput y)
-readWire [x, "OR",     y] = Or (readInput x) (readInput y)
-readWire [   "NOT",    x] = Not (readInput x)
-readWire [x, "LSHIFT", y] = LeftShift (readInput x) (readInput y)
-readWire [x, "RSHIFT", y] = RightShift (readInput x) (readInput y)
-readWire [x]              = Only (readInput x)
-
 readInstruction :: String -> Circuit -> Circuit
 readInstruction str = Map.insert name wire where
     ws   = words str
     name = last ws
     wire = readWire $ takeWhile (/= "->") ws
+    readWire :: [String] -> Instruction
+    readWire s = i where
+        i = case s of
+            [x, "AND",    y] -> And (readInput x) (readInput y)
+            [x, "OR",     y] -> Or (readInput x) (readInput y)
+            [   "NOT",    x] -> Not (readInput x)
+            [x, "LSHIFT", y] -> LeftShift (readInput x) (readInput y)
+            [x, "RSHIFT", y] -> RightShift (readInput x) (readInput y)
+            [x]              -> Only (readInput x)
+        readInput :: String -> Input
+        readInput i
+            | all isDigit i = Set (read i)
+            | otherwise     = Connect i
 
 evalWire :: Circuit -> Wire -> Signal
-evalWire c w = evalInstruction c (fromJust $ Map.lookup w c)
-
-evalInstruction :: Circuit -> Instruction -> Signal
-evalInstruction c i = case i of
-                        (And x y)        -> getInput x .&. getInput y
-                        (Or x y)         -> getInput x .|. getInput y
-                        (Not x)          -> complement $ getInput x
-                        (LeftShift x y)  -> shift (getInput x) (fromIntegral $ getInput y)
-                        (RightShift x y) -> shift (getInput x) (negate $ fromIntegral $ getInput y)
-                        (Only x)         -> getInput x
-                    where
-                        getInput (Connect x) = evalWire c x
-                        getInput (Set x)     = x
+evalWire c w = evalInstruction (fromJust $ Map.lookup w c) where
+    evalInstruction :: Instruction -> Signal
+    evalInstruction i = case i of
+        (And x y)        -> getInput x .&. getInput y
+        (Or x y)         -> getInput x .|. getInput y
+        (Not x)          -> complement $ getInput x
+        (LeftShift x y)  -> shift (getInput x) (fromIntegral $ getInput y)
+        (RightShift x y) -> shift (getInput x) (negate $ fromIntegral $ getInput y)
+        (Only x)         -> getInput x
+    getInput (Connect x) = evalWire c x
+    getInput (Set x)     = x
 
 main = do
-    input <- getContents
+    -- input <- getContents
+    input <- readFile "input.txt"
     let instructions = lines input
     let circuit = foldr readInstruction Map.empty instructions
-    print $ "Wire a: " ++ show (evalWire circuit "a")
+    print $ "Wire: " ++ show (evalWire circuit "x")
 
