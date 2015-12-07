@@ -22,23 +22,23 @@ data Instruction =
 type Circuit = Map.Map Wire Instruction
 
 readInstruction :: String -> Circuit -> Circuit
-readInstruction str = Map.insert name wire where
+readInstruction str = Map.insert wire ins where
     ws   = words str
-    name = last ws
-    wire = readWire $ takeWhile (/= "->") ws
-    readWire :: [String] -> Instruction
-    readWire s = i where
-        i = case s of
-            [x, "AND",    y] -> And (readInput x) (readInput y)
-            [x, "OR",     y] -> Or (readInput x) (readInput y)
-            [   "NOT",    x] -> Not (readInput x)
-            [x, "LSHIFT", y] -> LeftShift (readInput x) (readInput y)
-            [x, "RSHIFT", y] -> RightShift (readInput x) (readInput y)
-            [x]              -> Only (readInput x)
-        readInput :: String -> Input
-        readInput i
-            | all isDigit i = Set (read i)
-            | otherwise     = Connect i
+    wire = last ws
+    ins  = readWire $ takeWhile (/= "->") ws where
+        readWire :: [String] -> Instruction
+        readWire s = i where
+            i = case s of
+                [x, "AND",    y] -> And (readInput x) (readInput y)
+                [x, "OR",     y] -> Or (readInput x) (readInput y)
+                [   "NOT",    x] -> Not (readInput x)
+                [x, "LSHIFT", y] -> LeftShift (readInput x) (readInput y)
+                [x, "RSHIFT", y] -> RightShift (readInput x) (readInput y)
+                [x]              -> Only (readInput x)
+            readInput :: String -> Input
+            readInput i
+                | all isDigit i = Set (read i)
+                | otherwise     = Connect i
 
 evalCircuit :: Circuit -> Wire -> Signal
 evalCircuit c = evalWire where
