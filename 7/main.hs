@@ -2,6 +2,7 @@ import Data.Char
 import Data.Word
 import Data.Bits
 import Data.Maybe
+import Data.Function.Memoize
 import qualified Data.Map as Map
 
 type Wire = String
@@ -39,23 +40,26 @@ readInstruction str = Map.insert name wire where
             | all isDigit i = Set (read i)
             | otherwise     = Connect i
 
-evalWire :: Circuit -> Wire -> Signal
-evalWire c w = evalInstruction (fromJust $ Map.lookup w c) where
-    evalInstruction :: Instruction -> Signal
-    evalInstruction i = case i of
-        (And x y)        -> getInput x .&. getInput y
-        (Or x y)         -> getInput x .|. getInput y
-        (Not x)          -> complement $ getInput x
-        (LeftShift x y)  -> shift (getInput x) (fromIntegral $ getInput y)
-        (RightShift x y) -> shift (getInput x) (negate $ fromIntegral $ getInput y)
-        (Only x)         -> getInput x
-    getInput (Connect x) = evalWire c x
-    getInput (Set x)     = x
+evalCircuit :: Circuit -> Wire -> Signal
+evalCircuit c = evalWire where
+    evalWire = memoize evalWire'
+    evalWire' :: Wire -> Signal
+    evalWire' w = evalInstruction (fromJust $ Map.lookup w c) where
+        evalInstruction :: Instruction -> Signal
+        evalInstruction i = s where
+            s = case i of
+                (And x y)        -> getInput x .&. getInput y
+                (Or x y)         -> getInput x .|. getInput y
+                (Not x)          -> complement $ getInput x
+                (LeftShift x y)  -> shift (getInput x) (fromIntegral $ getInput y)
+                (RightShift x y) -> shift (getInput x) (negate $ fromIntegral $ getInput y)
+                (Only x)         -> getInput x
+            getInput (Connect x) = evalWire x
+            getInput (Set x)     = x
 
 main = do
-    -- input <- getContents
-    input <- readFile "input.txt"
+    input <- getContents
     let instructions = lines input
     let circuit = foldr readInstruction Map.empty instructions
-    print $ "Wire: " ++ show (evalWire circuit "x")
+    print $ "Wire: " ++ show (evalCircuit circuit "a")
 
