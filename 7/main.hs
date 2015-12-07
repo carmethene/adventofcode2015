@@ -51,8 +51,8 @@ evalCircuit c = evalWire where
                 (And x y)        -> getInput x .&. getInput y
                 (Or x y)         -> getInput x .|. getInput y
                 (Not x)          -> complement $ getInput x
-                (LeftShift x y)  -> shift (getInput x) (fromIntegral $ getInput y)
-                (RightShift x y) -> shift (getInput x) (negate $ fromIntegral $ getInput y)
+                (LeftShift x y)  -> shiftL (getInput x) (fromIntegral $ getInput y)
+                (RightShift x y) -> shiftR (getInput x) (fromIntegral $ getInput y)
                 (Only x)         -> getInput x
             getInput (Connect x) = evalWire x
             getInput (Set x)     = x
@@ -61,5 +61,11 @@ main = do
     input <- getContents
     let instructions = lines input
     let circuit = foldr readInstruction Map.empty instructions
-    print $ "Wire: " ++ show (evalCircuit circuit "a")
+    -- Part 1
+    let signal = evalCircuit circuit "a"
+    print $ "Wire a (1): " ++ show signal
+    -- Part 2
+    let circuit2 = Map.insert "b" (Only $ Set signal) circuit
+    let signal2 = evalCircuit circuit2 "a"
+    print $ "Wire a (2): " ++ show signal2
 
