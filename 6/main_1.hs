@@ -21,7 +21,7 @@ stringToLight str = (x,y) where
 stringToInstruction :: String -> Instruction
 stringToInstruction str
     | "turn " `isPrefixOf` str = stringToInstruction $ drop 5 str -- dropping "turn" makes parsing much simpler
-    | otherwise              = (op, start, end) where
+    | otherwise                = (op, start, end) where
         ws    = words str
         op    = stringToOperation $ head ws
         start = stringToLight $ ws !! 1
@@ -29,7 +29,7 @@ stringToInstruction str
 
 operate :: Light -> State -> Instruction -> State
 operate (x, y) s (op, (xMin, yMin), (xMax, yMax))
-    | x < xMin || x > xMax || y < yMin || y > yMax = s    -- out of Range, no change
+    | x < xMin || x > xMax || y < yMin || y > yMax = s    -- out of range, no change
     | op == TurnOn  = LightOn
     | op == TurnOff = LightOff
     | op == Toggle && s == LightOn  = LightOff
