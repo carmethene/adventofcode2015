@@ -34,6 +34,7 @@ loadWire c str = Map.insert wire ins c where
                 [x, "LSHIFT", y] -> LeftShift (readInput x) (readInput y)
                 [x, "RSHIFT", y] -> RightShift (readInput x) (readInput y)
                 [x]              -> Only (readInput x)
+                _                -> error $ "Invalid input: " ++ show str
             readInput :: String -> Input
             readInput i
                 | all isDigit i = Set (read i)
