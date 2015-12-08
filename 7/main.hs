@@ -9,14 +9,13 @@ type Signal = Word16
 
 data Input = Connect Wire | Set Signal deriving (Show)
 
-data Instruction =
-    And Input Input |
-    Or Input Input |
-    Not Input |
-    LeftShift Input Input |
-    RightShift Input Input |
-    Only Input
-    deriving (Show)
+data Instruction = And Input Input
+                 | Or Input Input
+                 | Not Input
+                 | LeftShift Input Input
+                 | RightShift Input Input
+                 | Only Input
+                 deriving (Show)
 
 type Circuit = Map.Map Wire Instruction
 
