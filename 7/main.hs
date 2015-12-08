@@ -1,7 +1,6 @@
 import Data.Char
 import Data.Word
 import Data.Bits
-import Data.Maybe
 import Data.Function.Memoize
 import qualified Data.Map as Map
 
@@ -44,16 +43,17 @@ readWire :: Circuit -> Wire -> Signal
 readWire c = evalWire where
     evalWire = memoize evalWire'
     evalWire' :: Wire -> Signal
-    evalWire' w = evalInstruction (fromJust $ Map.lookup w c) where
-        evalInstruction :: Instruction -> Signal
+    evalWire' w = evalInstruction (Map.lookup w c) where
+        evalInstruction :: Maybe Instruction -> Signal
         evalInstruction i = s where
             s = case i of
-                (And x y)        -> getInput x .&. getInput y
-                (Or x y)         -> getInput x .|. getInput y
-                (Not x)          -> complement $ getInput x
-                (LeftShift x y)  -> shiftL (getInput x) (fromIntegral $ getInput y)
-                (RightShift x y) -> shiftR (getInput x) (fromIntegral $ getInput y)
-                (Only x)         -> getInput x
+                Just (And x y)        -> getInput x .&. getInput y
+                Just (Or x y)         -> getInput x .|. getInput y
+                Just (Not x)          -> complement $ getInput x
+                Just (LeftShift x y)  -> shiftL (getInput x) (fromIntegral $ getInput y)
+                Just (RightShift x y) -> shiftR (getInput x) (fromIntegral $ getInput y)
+                Just (Only x)         -> getInput x
+                Nothing               -> error $ "Invalid wire: " ++ w
             getInput (Connect x) = evalWire x
             getInput (Set x)     = x
 
