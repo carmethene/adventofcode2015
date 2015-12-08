@@ -21,8 +21,8 @@ data Instruction =
 
 type Circuit = Map.Map Wire Instruction
 
-loadWire :: String -> Circuit -> Circuit
-loadWire str = Map.insert wire ins where
+loadWire :: Circuit -> String -> Circuit
+loadWire c str = Map.insert wire ins c where
     ws   = words str
     wire = last ws
     ins  = readInstruction $ takeWhile (/= "->") ws where
@@ -60,7 +60,7 @@ readWire c = evalWire where
 main = do
     input <- getContents
     let instructions = lines input
-    let circuit = foldr loadWire Map.empty instructions
+    let circuit = foldl loadWire Map.empty instructions
     -- Part 1
     let signal = readWire circuit "a"
     print $ "Wire a (1): " ++ show signal
