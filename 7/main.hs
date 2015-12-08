@@ -21,13 +21,13 @@ data Instruction =
 
 type Circuit = Map.Map Wire Instruction
 
-readInstruction :: String -> Circuit -> Circuit
-readInstruction str = Map.insert wire ins where
+loadWire :: String -> Circuit -> Circuit
+loadWire str = Map.insert wire ins where
     ws   = words str
     wire = last ws
-    ins  = readWire $ takeWhile (/= "->") ws where
-        readWire :: [String] -> Instruction
-        readWire s = i where
+    ins  = readInstruction $ takeWhile (/= "->") ws where
+        readInstruction :: [String] -> Instruction
+        readInstruction s = i where
             i = case s of
                 [x, "AND",    y] -> And (readInput x) (readInput y)
                 [x, "OR",     y] -> Or (readInput x) (readInput y)
@@ -60,7 +60,7 @@ evalCircuit c = evalWire where
 main = do
     input <- getContents
     let instructions = lines input
-    let circuit = foldr readInstruction Map.empty instructions
+    let circuit = foldr loadWire Map.empty instructions
     -- Part 1
     let signal = evalCircuit circuit "a"
     print $ "Wire a (1): " ++ show signal
