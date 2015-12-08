@@ -40,8 +40,8 @@ loadWire str = Map.insert wire ins where
                 | all isDigit i = Set (read i)
                 | otherwise     = Connect i
 
-evalCircuit :: Circuit -> Wire -> Signal
-evalCircuit c = evalWire where
+readWire :: Circuit -> Wire -> Signal
+readWire c = evalWire where
     evalWire = memoize evalWire'
     evalWire' :: Wire -> Signal
     evalWire' w = evalInstruction (fromJust $ Map.lookup w c) where
@@ -62,10 +62,10 @@ main = do
     let instructions = lines input
     let circuit = foldr loadWire Map.empty instructions
     -- Part 1
-    let signal = evalCircuit circuit "a"
+    let signal = readWire circuit "a"
     print $ "Wire a (1): " ++ show signal
     -- Part 2
     let circuit2 = Map.insert "b" (Only $ Set signal) circuit
-    let signal2 = evalCircuit circuit2 "a"
+    let signal2 = readWire circuit2 "a"
     print $ "Wire a (2): " ++ show signal2
 
