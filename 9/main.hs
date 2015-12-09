@@ -38,12 +38,11 @@ routes graph = filter (\x -> length x == Map.size graph) allRoutes where
                        _  -> flatten [walkPlace remainingGraph p (route ++ [p]) | p <- nextPlaces]
 
 routeLength :: Graph -> Route -> Distance
-routeLength graph (x:y:xys) = getDistance x y + routeLength graph (y:xys) where
+routeLength graph route = sum [getDistance x y | (x, y) <- zip route (tail route)] where
     getDistance :: Place -> Place -> Distance
     getDistance x y = distance where
         roads = fromJust $ Map.lookup x graph
         (_, distance) = fromJust $ find (\(r,d) -> r == y) roads
-routeLength graph _ = 0
 
 main = do
     input <- getContents 
