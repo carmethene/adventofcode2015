@@ -37,8 +37,16 @@ routes graph = filter (\x -> length x == Map.size graph) allRoutes where
                        [] -> [route]
                        _  -> flatten [walkPlace remainingGraph p (route ++ [p]) | p <- nextPlaces] where
 
+routeLength :: Graph -> Route -> Distance
+routeLength graph (x:y:xys) = getDistance x y + routeLength graph (y:xys) where
+    getDistance :: Place -> Place -> Distance
+    getDistance x y = distance where
+        roads = fromJust $ Map.lookup x graph
+        (_, distance) = fromJust $ find (\(r,d) -> r == y) roads
+routeLength graph _ = 0
+
 main = do
     input <- readFile "input.txt"
     let graph = foldr loadRoad Map.empty (lines input)
-    print $ routes graph
+    print $ "Minimum distance: " ++ show (minimum $ map (routeLength graph) (routes graph))
 
