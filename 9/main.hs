@@ -8,6 +8,11 @@ type Road = (Place, Distance)
 type Graph = Map.Map Place [Road]
 type Route = [Place]
 
+flatten :: [[a]] -> [a]
+flatten [] = []
+flatten [a] = a
+flatten (x:xs) = x ++ flatten xs
+
 loadRoad :: String -> Graph -> Graph
 loadRoad string graph = addRoad x y d (addRoad y x d graph) where
     [x, "to", y, "=", ds] = words string
@@ -18,11 +23,6 @@ loadRoad string graph = addRoad x y d (addRoad y x d graph) where
         roads = case Map.lookup place graph of
                   Just rs -> road : rs
                   Nothing -> [road]
-
-flatten :: [[a]] -> [a]
-flatten [] = []
-flatten [a] = a
-flatten (x:xs) = x ++ flatten xs
 
 routes :: Graph -> [Route]
 routes graph = filter (\x -> length x == Map.size graph) allRoutes where
@@ -46,7 +46,11 @@ routeLength graph (x:y:xys) = getDistance x y + routeLength graph (y:xys) where
 routeLength graph _ = 0
 
 main = do
-    input <- readFile "input.txt"
+    input <- getContents 
     let graph = foldr loadRoad Map.empty (lines input)
-    print $ "Minimum distance: " ++ show (minimum $ map (routeLength graph) (routes graph))
+    let routeLengths = map (routeLength graph) (routes graph)
+    -- Part 1
+    print $ "Minimum distance: " ++ show (minimum routeLengths)
+    -- Part 2
+    print $ "Maximum distance: " ++ show (maximum routeLengths)
 
