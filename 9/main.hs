@@ -35,7 +35,7 @@ routes graph = filter (\x -> length x == Map.size graph) allRoutes where
             nextPlaces = filter (\p -> isJust $ Map.lookup p remainingGraph) [p | (p, _) <- roads]
             routes = case nextPlaces of
                        [] -> [route]
-                       _  -> flatten [walkPlace remainingGraph p (route ++ [p]) | p <- nextPlaces] where
+                       _  -> flatten [walkPlace remainingGraph p (route ++ [p]) | p <- nextPlaces]
 
 routeLength :: Graph -> Route -> Distance
 routeLength graph (x:y:xys) = getDistance x y + routeLength graph (y:xys) where
