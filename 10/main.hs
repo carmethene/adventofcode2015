@@ -1,7 +1,7 @@
 import Data.List
 
 lookAndSay :: String -> String
-lookAndSay val = foldr (\x y -> show (length x) ++ [head x] ++ y) "" (group val)
+lookAndSay val = concatMap (\x -> show (length x) ++ [head x]) (group val)
 
 main = do
     input <- getLine
