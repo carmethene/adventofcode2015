@@ -1,12 +1,7 @@
 import Data.List
 
-flatten :: [[a]] -> [a]
-flatten [] = []
-flatten [a] = a
-flatten (x:xs) = x ++ flatten xs
-
 lookAndSay :: String -> String
-lookAndSay val = flatten $ map (\x -> show (length x) ++ [head x]) (group val)
+lookAndSay val = foldr (\x y -> show (length x) ++ [head x] ++ y) "" (group val)
 
 main = do
     input <- getLine
