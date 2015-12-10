@@ -37,7 +37,7 @@ routeLength graph route = sum [getDistance x y | (x, y) <- zip route (tail route
     getDistance :: Place -> Place -> Distance
     getDistance x y = distance where
         roads = fromJust $ Map.lookup x graph
-        (_, distance) = fromJust $ find (\(r,d) -> r == y) roads
+        (_, distance) = fromJust $ find (\(r,_) -> r == y) roads
 
 main = do
     input <- getContents 
