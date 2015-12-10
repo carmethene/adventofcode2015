@@ -53,7 +53,7 @@ readWire c = evalWire where
                 Just (LeftShift x y)  -> shiftL (getInput x) (fromIntegral $ getInput y)
                 Just (RightShift x y) -> shiftR (getInput x) (fromIntegral $ getInput y)
                 Just (Only x)         -> getInput x
-                Nothing               -> error $ "Invalid wire: " ++ w
+                Nothing               -> error $ "Invalid wire: " ++ show w
             getInput (Connect x) = evalWire x
             getInput (Set x)     = x
 
