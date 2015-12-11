@@ -24,5 +24,8 @@ main = do
     input <- getLine
     let allPasswords = iterate incrementString input
     let validPasswords = filter isCompliant allPasswords
-    print $ "Next password: " ++ head validPasswords
+    -- Part 1
+    print $ "Next password (1): " ++ head validPasswords
+    -- Part 2
+    print $ "Next password (2): " ++ validPasswords !! 1
 
