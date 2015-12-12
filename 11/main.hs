@@ -3,7 +3,7 @@ import Data.List
 incrementString :: String -> String
 incrementString = reverse . incrementRecurse . reverse where
     incrementRecurse :: String -> String
-    incrementRecurse [] = []
+    incrementRecurse []     = []
     incrementRecurse (x:xs) = if x == 'z'
                                  then 'a' : incrementRecurse xs
                                  else succ x : xs
