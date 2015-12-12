@@ -1,14 +1,12 @@
 import Data.List
 
 incrementString :: String -> String
-incrementString = reverse . incrementWithCarry True . reverse where
-    incrementWithCarry :: Bool -> String -> String
-    incrementWithCarry _ []         = []
-    incrementWithCarry carry (x:xs) = if carry then incrementChar x : rest else x : rest where
-        incrementChar :: Char -> Char
-        incrementChar chr = if chr == 'z' then 'a' else succ chr
-        newCarry = carry && x == 'z'
-        rest     = incrementWithCarry newCarry xs
+incrementString = reverse . incrementRecurse . reverse where
+    incrementRecurse :: String -> String
+    incrementRecurse [] = []
+    incrementRecurse (x:xs) = if x == 'z'
+                                 then 'a' : incrementRecurse xs
+                                 else succ x : xs
 
 isCompliant :: String -> Bool
 isCompliant str = increasingStraightThree str && noBadChars str && containsTwoPairs str where
