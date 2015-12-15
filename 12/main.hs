@@ -74,32 +74,57 @@ parseJsonDocument = object <|> array where
     object = JDObject <$> parseJsonObject
     array  = JDArray  <$> parseJsonArray
 
--- JSON walker
-sumJsonObject :: JsonObject -> JsonNumber
--- sumJsonObject obj = sum (map sumJsonValue (Map.elems obj))
+-- Simple solution to sum...
+{-| Part 1:
+sumJsonDocument :: JsonDocument -> JsonNumber
+sumJsonDocument doc = let
+        sumJsonObject obj = sum (map sumJsonValue (Map.elems obj))
+        sumJsonArray      = foldr ((+) . sumJsonValue) 0
+        sumJsonValue val  = case val of
+            JVObject obj -> sumJsonObject obj
+            JVArray  arr -> sumJsonArray arr
+            JVNumber num -> num
+            _            -> 0
+        in case doc of
+            JDObject obj -> sumJsonObject obj
+            JDArray  arr -> sumJsonArray arr
+-}
+
+{-| Part 2:
 sumJsonObject obj = if (elem (JVString "red") vals)
                        then 0
                        else sum (map sumJsonValue vals) where
                            vals = Map.elems obj
+-}
 
-sumJsonArray :: JsonArray -> JsonNumber
-sumJsonArray = foldr ((+) . sumJsonValue) 0
+-- More general solution:
 
-sumJsonValue :: JsonValue -> JsonNumber
-sumJsonValue val = case val of
-    JVObject obj -> sumJsonObject obj
-    JVArray  arr -> sumJsonArray arr
-    JVNumber num -> num
-    _            -> 0
+-- JSON foldr
+foldrJsonDocument :: (JsonValue -> a -> a) -> a -> JsonDocument -> a
+foldrJsonDocument f x d = let
+        foldrJsonObject :: (JsonValue -> a -> a) -> a -> JsonObject -> a
+        foldrJsonObject f x o = foldr f x (Map.elems o)
+        foldrJsonArray :: (JsonValue -> a -> a) -> a -> JsonArray -> a
+        foldrJsonArray = foldr
+        reduceJsonValue :: (JsonValue -> a -> a) -> JsonValue -> a -> a
+        reduceJsonValue f val acc = case val of
+                JVObject obj -> foldrJsonObject (reduceJsonValue f) acc obj
+                JVArray  arr -> foldrJsonArray (reduceJsonValue f) acc arr
+                otherwise    -> f val acc
+        in case d of
+                JDObject obj -> foldrJsonObject (reduceJsonValue f) x obj
+                JDArray  arr -> foldrJsonArray (reduceJsonValue f) x arr
 
-sumJsonDocument :: JsonDocument -> JsonNumber
-sumJsonDocument doc = case doc of
-    JDObject obj -> sumJsonObject obj
-    JDArray  arr -> sumJsonArray arr
+-- Sum function
+sumJsonValue :: JsonValue -> JsonNumber -> JsonNumber
+sumJsonValue val acc = case val of
+                           JVNumber num -> num + acc
+                           _            -> acc
 
 -- Entry
 main = do
     input <- BS.readFile "input.txt"
     let (Right doc) = A.parseOnly parseJsonDocument input
-    print $ "Sum: " ++ show (sumJsonDocument doc)
+    -- Part 1:
+    print $ "Sum: " ++ show (foldrJsonDocument sumJsonValue 0 doc)
 
