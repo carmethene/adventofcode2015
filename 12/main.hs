@@ -124,7 +124,7 @@ isRedObject val = case val of
 
 -- Entry
 main = do
-    input <- BS.readFile "input.txt"
+    input <- BS.getContents
     let (Right doc) = A.parseOnly parseJsonDocument input
     -- Part 1:
     print $ "Sum (1): " ++ show (foldrJsonDocument sumValues 0 doc)
