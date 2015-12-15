@@ -125,10 +125,10 @@ isRedObject val = case val of
 -- Entry
 main = do
     input <- BS.getContents
-    let (Right doc) = A.parseOnly parseJsonDocument input
+    let (Right document) = A.parseOnly parseJsonDocument input
     -- Part 1:
-    print $ "Sum (1): " ++ show (foldrJsonDocument sumValues 0 doc)
+    print $ "Sum (1): " ++ show (foldrJsonDocument sumValues 0 document)
     -- Part 2:
-    let filteredDoc = filterJsonDocument (not . isRedObject) doc
-    print $ "Sum (2): " ++ show (foldrJsonDocument sumValues 0 filteredDoc)
+    let filteredDocument = filterJsonDocument (not . isRedObject) document
+    print $ "Sum (2): " ++ show (foldrJsonDocument sumValues 0 filteredDocument)
 
