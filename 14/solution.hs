@@ -34,22 +34,23 @@ parseReindeerMap = do
     return $ Map.fromList reindeer
 
 -- Solver
-type Point = (Distance, Distance, Time, Speed)
+
+-- A move: (StartDistance, EndDistance, TimeMoveStarted, SpeedOfMove)
+type State = (Distance, Distance, Time, Speed)
 
 progressAtTime :: Time -> [Move] -> Distance
 progressAtTime time moves = distance  where
     distance       = d0 + s * (time - t0)
-    (d0, _, t0, s) = head $ dropWhile (\(_, _, t, _) -> t < time) (pointList moves)
+    (d0, _, t0, s) = head $ dropWhile (\(_, _, t, _) -> t < time) (stateList moves)
 
-pointList :: [Move] -> [Point]
-pointList = scanl nextPoint (0, 0, 0, 0) . cycle where
-    nextPoint :: Point -> Move -> Point
-    nextPoint (_, d0, t0, _) (s, t) = (d0, d0 + s*t, t0 + t, s)
+stateList :: [Move] -> [State]
+stateList = scanl nextState (0, 0, 0, 0) . cycle where
+    nextState :: State -> Move -> State
+    nextState (_, d0, t0, _) (s, t) = (d0, d0 + s*t, t0 + t, s)
 
 main = do
     input <- BS.readFile "input.txt"
     let (Right reindeer) = A.parseOnly parseReindeerMap input
     let progressMap = Map.map (progressAtTime 2503) reindeer
-    print progressMap
     print $ "Max distance: " ++ show (maximum $ Map.elems progressMap)
 
