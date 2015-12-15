@@ -74,8 +74,28 @@ parseJsonDocument = object <|> array where
     object = JDObject <$> parseJsonObject
     array  = JDArray  <$> parseJsonArray
 
+-- JSON walker
+sumJsonObject :: JsonObject -> JsonNumber
+sumJsonObject obj = sum (map sumJsonValue (Map.elems obj))
+
+sumJsonArray :: JsonArray -> JsonNumber
+sumJsonArray = foldr ((+) . sumJsonValue) 0
+
+sumJsonValue :: JsonValue -> JsonNumber
+sumJsonValue val = case val of
+    JVObject obj -> sumJsonObject obj
+    JVArray  arr -> sumJsonArray arr
+    JVNumber num -> num
+    _            -> 0
+
+sumJsonDocument :: JsonDocument -> JsonNumber
+sumJsonDocument doc = case doc of
+    JDObject obj -> sumJsonObject obj
+    JDArray  arr -> sumJsonArray arr
+
 -- Entry
 main = do
     input <- BS.readFile "input.txt"
-    print $ A.parseOnly parseJsonDocument input 
+    let (Right doc) = A.parseOnly parseJsonDocument input
+    print $ "Sum: " ++ show (sumJsonDocument doc)
 
