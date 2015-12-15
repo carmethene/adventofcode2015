@@ -111,7 +111,7 @@ filterJsonDocument f d = let
              JDObject obj -> JDObject (filterJsonObject f obj)
              JDArray  arr -> JDArray (filterJsonArray f arr)
 
--- Low order functions
+-- First order functions
 sumValues :: JsonValue -> JsonNumber -> JsonNumber
 sumValues val acc = case val of
                       JVNumber num -> num + acc
