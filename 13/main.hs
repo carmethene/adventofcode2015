@@ -4,11 +4,15 @@ import qualified Data.Map as Map
 import qualified Data.ByteString as BS
 import qualified Data.Attoparsec.ByteString.Char8 as A
 import Control.Applicative
+import Data.List
+import Data.Maybe
 
+-- Types
 type Name = BS.ByteString
 type Happiness = Integer
 type Relationship = (Name, Name, Happiness)
 type RelationshipGraph = Map.Map Name (Map.Map Name Happiness)
+type Seating = [Name]
 
 -- Parser
 parseScale :: A.Parser Happiness
@@ -41,7 +45,22 @@ parseRelationships = do
                        Just g  -> Map.insert tgt hpp g
                        Nothing -> Map.insert tgt hpp Map.empty
 
+-- Set of all possibilities
+allSeatings :: RelationshipGraph -> [Seating]
+allSeatings = permutations . Map.keys
+
+-- Cost of each possibility
+seatingHappiness :: RelationshipGraph -> Seating -> Happiness
+seatingHappiness g s = totalCost where
+    cost (src, tgt) = fromJust $ Map.lookup tgt tgtGraph where
+        tgtGraph = fromJust $ Map.lookup src g
+    pairs     = (last s, head s) : (head s, last s) : zip s (tail s) ++ zip (tail s) s
+    costs     = map cost pairs
+    totalCost = sum costs
+
 main = do
     input <- BS.readFile "input.txt"
-    let test = A.parseOnly parseRelationships input
-    print test
+    let (Right relationships) = A.parseOnly parseRelationships input
+    let values = map (seatingHappiness relationships) (allSeatings relationships)
+    print $ "Max happiness: " ++ show (maximum values)
+
