@@ -46,21 +46,26 @@ parseRelationships = do
                        Nothing -> Map.insert tgt hpp Map.empty
 
 -- Set of all possibilities
-allSeatings :: RelationshipGraph -> [Seating]
-allSeatings = permutations . Map.keys
+allSeatings :: [Name] -> [Seating]
+allSeatings = permutations
 
 -- Cost of each possibility
 seatingHappiness :: RelationshipGraph -> Seating -> Happiness
 seatingHappiness g s = totalCost where
-    cost (src, tgt) = fromJust $ Map.lookup tgt tgtGraph where
-        tgtGraph = fromJust $ Map.lookup src g
+    cost (src, tgt) = case Map.lookup src g of
+                        Just g  -> fromMaybe 0 (Map.lookup tgt g)
+                        Nothing -> 0
     pairs     = (last s, head s) : (head s, last s) : zip s (tail s) ++ zip (tail s) s
     costs     = map cost pairs
     totalCost = sum costs
 
 main = do
-    input <- BS.readFile "input.txt"
+    input <- BS.getContents
     let (Right relationships) = A.parseOnly parseRelationships input
-    let values = map (seatingHappiness relationships) (allSeatings relationships)
-    print $ "Max happiness: " ++ show (maximum values)
+    -- Part 1
+    let seatings = allSeatings $ Map.keys relationships
+    print $ "Max happiness (1): " ++ show (maximum $ map (seatingHappiness relationships) seatings)
+    -- Part 2
+    let seatingsWithMe = allSeatings $ "me" : Map.keys relationships
+    print $ "Max happiness (2): " ++ show (maximum $ map (seatingHappiness relationships) seatingsWithMe)
 
