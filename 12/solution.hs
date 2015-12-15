@@ -119,8 +119,8 @@ sumValues val acc = case val of
 
 isRedObject :: JsonValue -> Bool
 isRedObject val = case val of
-                    JVObject obj -> JVString "red" `notElem` Map.elems obj
-                    _            -> True
+                    JVObject obj -> JVString "red" `elem` Map.elems obj
+                    _            -> False
 
 -- Entry
 main = do
@@ -129,6 +129,6 @@ main = do
     -- Part 1:
     print $ "Sum (1): " ++ show (foldrJsonDocument sumValues 0 doc)
     -- Part 2:
-    let filteredDoc = filterJsonDocument isRedObject doc
+    let filteredDoc = filterJsonDocument (not . isRedObject) doc
     print $ "Sum (2): " ++ show (foldrJsonDocument sumValues 0 filteredDoc)
 
