@@ -2,11 +2,9 @@ import Data.List
 import Data.List.Split
 
 -- Types
-data Operation    = TurnOn | TurnOff | Toggle deriving (Show, Eq)
-type Light        = (Integer, Integer)
-type Instruction  = (Operation, Light, Light)
-data StateBool    = LightOn | LightOff deriving (Show, Eq)
-type StateInteger = Integer
+data Operation   = TurnOn | TurnOff | Toggle deriving (Show, Eq)
+type Light       = (Integer, Integer)
+type Instruction = (Operation, Light, Light)
 
 -- Parser
 stringToOperation :: String -> Operation
@@ -31,6 +29,8 @@ stringToInstruction str
         end   = stringToLight $ ws !! 3
 
 -- Solver for Part 1
+data StateBool = LightOn | LightOff deriving (Show, Eq)
+
 operateBool :: Light -> StateBool -> Instruction -> StateBool
 operateBool (x, y) s (op, (xMin, yMin), (xMax, yMax))
     | x < xMin || x > xMax || y < yMin || y > yMax = s    -- out of range, no change
@@ -43,6 +43,8 @@ runInstructionsBool :: [Instruction] -> Light -> StateBool
 runInstructionsBool instructions light = foldl (operateBool light) LightOff instructions
 
 -- Solver for Part 2
+type StateInteger = Integer
+
 operateInteger :: Light -> StateInteger -> Instruction -> StateInteger
 operateInteger (x, y) s (op, (xMin, yMin), (xMax, yMax))
     | x < xMin || x > xMax || y < yMin || y > yMax = s    -- out of range, no change
