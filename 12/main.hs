@@ -94,13 +94,13 @@ foldrJsonDocument f x d = let
 filterJsonDocument :: (JsonValue -> Bool) -> JsonDocument -> JsonDocument
 filterJsonDocument f d = let
         filterJsonObject :: (JsonValue -> Bool) -> JsonObject -> JsonObject
-        filterJsonObject f o = recursiveFilter where
+        filterJsonObject f o = recurseMap where
                 userFilter = Map.filter f o
-                recursiveFilter = Map.map (filterJsonValue f) userFilter
+                recurseMap = Map.map (filterJsonValue f) userFilter
         filterJsonArray :: (JsonValue -> Bool) -> JsonArray -> JsonArray
-        filterJsonArray f a  = recursiveFilter where
+        filterJsonArray f a = recurseMap where
                 userFilter = filter f a
-                recursiveFilter = map (filterJsonValue f) userFilter
+                recurseMap = map (filterJsonValue f) userFilter
         filterJsonValue :: (JsonValue -> Bool) -> JsonValue -> JsonValue
         filterJsonValue f val =
             case val of
