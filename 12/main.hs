@@ -74,32 +74,7 @@ parseJsonDocument = object <|> array where
     object = JDObject <$> parseJsonObject
     array  = JDArray  <$> parseJsonArray
 
--- Simple solution to sum...
-{-| Part 1:
-sumJsonDocument :: JsonDocument -> JsonNumber
-sumJsonDocument doc = let
-        sumJsonObject obj = sum (map sumJsonValue (Map.elems obj))
-        sumJsonArray      = foldr ((+) . sumJsonValue) 0
-        sumJsonValue val  = case val of
-            JVObject obj -> sumJsonObject obj
-            JVArray  arr -> sumJsonArray arr
-            JVNumber num -> num
-            _            -> 0
-        in case doc of
-            JDObject obj -> sumJsonObject obj
-            JDArray  arr -> sumJsonArray arr
--}
-
-{-| Part 2:
-sumJsonObject obj = if (elem (JVString "red") vals)
-                       then 0
-                       else sum (map sumJsonValue vals) where
-                           vals = Map.elems obj
--}
-
--- More general solution:
-
--- JSON foldr
+-- High order functions
 foldrJsonDocument :: (JsonValue -> a -> a) -> a -> JsonDocument -> a
 foldrJsonDocument f x d = let
         foldrJsonObject :: (JsonValue -> a -> a) -> a -> JsonObject -> a
@@ -107,24 +82,53 @@ foldrJsonDocument f x d = let
         foldrJsonArray :: (JsonValue -> a -> a) -> a -> JsonArray -> a
         foldrJsonArray = foldr
         reduceJsonValue :: (JsonValue -> a -> a) -> JsonValue -> a -> a
-        reduceJsonValue f val acc = case val of
-                JVObject obj -> foldrJsonObject (reduceJsonValue f) acc obj
-                JVArray  arr -> foldrJsonArray (reduceJsonValue f) acc arr
-                otherwise    -> f val acc
+        reduceJsonValue f val acc =
+            case val of
+              JVObject obj -> foldrJsonObject (reduceJsonValue f) acc obj
+              JVArray  arr -> foldrJsonArray (reduceJsonValue f) acc arr
+              otherwise    -> f val acc
         in case d of
-                JDObject obj -> foldrJsonObject (reduceJsonValue f) x obj
-                JDArray  arr -> foldrJsonArray (reduceJsonValue f) x arr
+             JDObject obj -> foldrJsonObject (reduceJsonValue f) x obj
+             JDArray  arr -> foldrJsonArray (reduceJsonValue f) x arr
 
--- Sum function
-sumJsonValue :: JsonValue -> JsonNumber -> JsonNumber
-sumJsonValue val acc = case val of
-                           JVNumber num -> num + acc
-                           _            -> acc
+filterJsonDocument :: (JsonValue -> Bool) -> JsonDocument -> JsonDocument
+filterJsonDocument f d = let
+        filterJsonObject :: (JsonValue -> Bool) -> JsonObject -> JsonObject
+        filterJsonObject f o = recursiveFilter where
+                userFilter = Map.filter f o
+                recursiveFilter = Map.map (filterJsonValue f) userFilter
+        filterJsonArray :: (JsonValue -> Bool) -> JsonArray -> JsonArray
+        filterJsonArray f a  = recursiveFilter where
+                userFilter = filter f a
+                recursiveFilter = map (filterJsonValue f) userFilter
+        filterJsonValue :: (JsonValue -> Bool) -> JsonValue -> JsonValue
+        filterJsonValue f val =
+            case val of
+              JVObject obj -> JVObject $ filterJsonObject f obj
+              JVArray arr  -> JVArray $ filterJsonArray f arr
+              _            -> val
+        in case d of 
+             JDObject obj -> JDObject (filterJsonObject f obj)
+             JDArray  arr -> JDArray (filterJsonArray f arr)
+
+-- Low order functions
+sumValues :: JsonValue -> JsonNumber -> JsonNumber
+sumValues val acc = case val of
+                      JVNumber num -> num + acc
+                      _            -> acc
+
+isRedObject :: JsonValue -> Bool
+isRedObject val = case val of
+                    JVObject obj -> JVString "red" `notElem` Map.elems obj
+                    _            -> True
 
 -- Entry
 main = do
     input <- BS.readFile "input.txt"
     let (Right doc) = A.parseOnly parseJsonDocument input
     -- Part 1:
-    print $ "Sum: " ++ show (foldrJsonDocument sumJsonValue 0 doc)
+    print $ "Sum (1): " ++ show (foldrJsonDocument sumValues 0 doc)
+    -- Part 2:
+    let filteredDoc = filterJsonDocument isRedObject doc
+    print $ "Sum (2): " ++ show (foldrJsonDocument sumValues 0 filteredDoc)
 
