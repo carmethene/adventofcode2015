@@ -6,14 +6,15 @@ import qualified Data.ByteString as BS
 import qualified Data.Attoparsec.ByteString.Char8 as A
 
 -- Types
-type Name  = BS.ByteString
-type Speed = Integer
-type Time  = Integer
-type Move  = (Speed, Time)
+type Name     = BS.ByteString
+type Speed    = Integer
+type Time     = Integer
+type Distance = Integer
+type Move     = (Speed, Time)
 type Reindeer    = (Name, [Move])
 type ReindeerMap = Map.Map Name [Move]
 
--- Vixen can fly 8 km/s for 8 seconds, but then must rest for 53 seconds.
+-- Parser
 parseReindeer :: A.Parser Reindeer
 parseReindeer = do
     name <- A.takeWhile (/= ' ')
@@ -32,8 +33,23 @@ parseReindeerMap = do
     reindeer <- A.many' parseReindeer
     return $ Map.fromList reindeer
 
+-- Solver
+type Point = (Distance, Distance, Time, Speed)
+
+pointList :: [Move] -> [Point]
+pointList = scanl nextPoint (0, 0, 0, 0) . cycle where
+    nextPoint :: Point -> Move -> Point
+    nextPoint (_, d0, t0, _) (s, t) = (d0, d0 + s*t, t0 + t, s)
+
+progressAtTime :: Time -> [Move] -> Distance
+progressAtTime time moves = distance  where
+    (d0, _, _, s) = head $ dropWhile (\(_, _, t, _) -> t < time) (pointList moves)
+    distance = d0 + s*time
+
 main = do
     input <- BS.readFile "input.txt"
-    let r = A.parseOnly parseReindeerMap input
-    print r
+    let (Right reindeer) = A.parseOnly parseReindeerMap input
+    let progressMap = Map.map (progressAtTime 1000) reindeer
+    print progressMap
+    print $ "Max distance: " ++ show (maximum $ Map.elems progressMap)
 
