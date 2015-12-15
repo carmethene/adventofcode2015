@@ -17,7 +17,7 @@ data JsonValue  = JVString JsonString
                 | JVArray  JsonArray
                 | JVBool   JsonBool
                 | JVNull
-                deriving Show
+                deriving (Show, Eq)
 
 data JsonDocument = JDObject JsonObject
                   | JDArray JsonArray
@@ -76,7 +76,11 @@ parseJsonDocument = object <|> array where
 
 -- JSON walker
 sumJsonObject :: JsonObject -> JsonNumber
-sumJsonObject obj = sum (map sumJsonValue (Map.elems obj))
+-- sumJsonObject obj = sum (map sumJsonValue (Map.elems obj))
+sumJsonObject obj = if (elem (JVString "red") vals)
+                       then 0
+                       else sum (map sumJsonValue vals) where
+                           vals = Map.elems obj
 
 sumJsonArray :: JsonArray -> JsonNumber
 sumJsonArray = foldr ((+) . sumJsonValue) 0
