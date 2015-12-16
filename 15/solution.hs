@@ -52,30 +52,24 @@ allRecipes :: Integer -> Integer -> [Recipe]
 allRecipes 1 t = [[t]]
 allRecipes n t = [ x:xs | x <- [0..t], xs <- allRecipes (n-1) (t-x)]
 
--- Reduce a recipe to a score
-type Property = (Integer, Integer, Integer, Integer, Integer)
+-- Reduce a recipe to a set of properties
+type Properties = (Integer, Integer, Integer, Integer, Integer)
 
-recipeScore :: [Ingredient] -> Recipe -> Integer
-recipeScore x y = calculateScore $ clampProperty $ sumProperties $ properties x y
-
-calculateScore :: Property -> Integer
-calculateScore (v,w,x,y,z) = v*w*x*y
-
-clampProperty :: Property -> Property
-clampProperty (v,w,x,y,z) = (m v, m w, m x, m y, m z) where m = max 0
-
-sumProperties :: [Property] -> Property
-sumProperties = foldr1 sumProperty where
-    sumProperty (v0,w0,x0,y0,z0) (v1,w1,x1,y1,z1) = (v0+v1,w0+w1,x0+x1,y0+y1,z0+z1)
-
-properties :: [Ingredient] -> Recipe -> [Property]
-properties = zipWith property where
-    property i r = (cap, dur, flv, txt, cal) where
-        cap = r * capacity i
-        dur = r * durability i
-        flv = r * flavor i
-        txt = r * texture i
-        cal = r * calories i
+recipeProperties :: [Ingredient] -> Recipe -> Properties
+recipeProperties i r = clampProperties $ sumProperties $ properties i r where
+        clampProperties :: Properties -> Properties
+        clampProperties (v,w,x,y,z) = (m v, m w, m x, m y, m z) where m = max 0
+        sumProperties :: [Properties] -> Properties
+        sumProperties = foldr1 sumProperty where
+                sumProperty (v0,w0,x0,y0,z0) (v1,w1,x1,y1,z1) = (v0+v1,w0+w1,x0+x1,y0+y1,z0+z1)
+        properties :: [Ingredient] -> Recipe -> [Properties]
+        properties = zipWith property where
+                property i r = (cap, dur, flv, txt, cal) where
+                        cap = r * capacity i
+                        dur = r * durability i
+                        flv = r * flavor i
+                        txt = r * texture i
+                        cal = r * calories i
 
 -- Solver
 main = do
@@ -84,6 +78,11 @@ main = do
     let ingredients = Map.elems ingredientMap
     let totalSize = 100 
     let recipes = allRecipes (fromIntegral $ length ingredients) totalSize
-    let allScores = map (recipeScore ingredients) $ allRecipes (fromIntegral $ length ingredients) totalSize
-    print $ "Max score: " ++ show (maximum allScores)
+    let allProperties = map (recipeProperties ingredients) recipes
+    -- Part 1
+    let recipeScoreNoCals (v,w,x,y,_) = v*w*x*y
+    print $ "Max score (no cals):  " ++ show (maximum (map recipeScoreNoCals allProperties))
+    -- Part 2
+    let recipeScoreWithCals (v,w,x,y,z) = if z == 500 then v*w*x*y else 0
+    print $ "Max score (500 cals): " ++ show (maximum (map recipeScoreWithCals allProperties))
 
