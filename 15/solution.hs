@@ -75,9 +75,9 @@ recipeProperties i r = clampProperties $ sumProperties $ properties i r where
 main = do
     input <- BS.getContents
     let (Right ingredientMap) = A.parseOnly parseIngredients input
-    let ingredients = Map.elems ingredientMap
-    let totalSize = 100 
-    let recipes = allRecipes (fromIntegral $ length ingredients) totalSize
+    let ingredients   = Map.elems ingredientMap
+    let totalSize     = 100 
+    let recipes       = allRecipes (fromIntegral $ length ingredients) totalSize
     let allProperties = map (recipeProperties ingredients) recipes
     -- Part 1
     let recipeScoreNoCals (v,w,x,y,_) = v*w*x*y
