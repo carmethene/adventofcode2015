@@ -73,7 +73,7 @@ recipeProperties i r = clampProperties $ sumProperties $ properties i r where
 
 -- Solver
 main = do
-    input <- BS.readFile "input.txt"
+    input <- BS.getContents
     let (Right ingredientMap) = A.parseOnly parseIngredients input
     let ingredients = Map.elems ingredientMap
     let totalSize = 100 
