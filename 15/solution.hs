@@ -50,7 +50,7 @@ parseIngredients = do
 -- A list of all possible recipes
 allRecipes :: Integer -> Integer -> [Recipe]
 allRecipes 1 t = [[t]]
-allRecipes n t = [ x:xs | x <- [0..t], xs <- allRecipes (n-1) (t-x)]
+allRecipes n t = [ x:xs | x <- [0..t], xs <- allRecipes (n-1) (t-x) ]
 
 -- Reduce a recipe to a set of properties
 type Properties = (Integer, Integer, Integer, Integer, Integer)
