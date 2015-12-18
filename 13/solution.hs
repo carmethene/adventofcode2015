@@ -58,10 +58,11 @@ seatingHappiness g s = totalCost where
 main = do
     input <- BS.getContents
     let (Right relationships) = A.parseOnly parseRelationships input
+    let rs = Map.keys relationships
     -- Part 1
-    let seatings = permutations $ Map.keys relationships
+    let seatings = map (head rs :) (permutations (tail rs))
     print $ "Max happiness (1): " ++ show (maximum $ map (seatingHappiness relationships) seatings)
     -- Part 2
-    let seatingsWithMe = permutations $ "me" : Map.keys relationships
+    let seatingsWithMe = map ("me" :) (permutations rs)
     print $ "Max happiness (2): " ++ show (maximum $ map (seatingHappiness relationships) seatingsWithMe)
 
