@@ -16,7 +16,7 @@ main = do
     -- Part 1
     print $ "Num combinations: " ++ show (length combinations)
     -- Part 2
-    let minLength = minimum (map length combinations)
+    let minLength       = minimum (map length combinations)
     let minCombinations = filter ((== minLength) . length) combinations
     print $ "Min combinations: " ++ show (length minCombinations)
 
