@@ -28,9 +28,6 @@ parseAunt = do
     A.endOfLine
     return (num, samples)
 
-parseAunts :: A.Parser [Aunt]
-parseAunts = A.many' parseAunt
- 
 -- Solver
 
 -- Part 1: Exact match
@@ -61,7 +58,7 @@ desiredAunt = "children: 3, cats: 7, samoyeds: 2, pomeranians: 3, akitas: 0, viz
 
 main = do
     input <- BS.getContents
-    let (Right aunts)   = A.parseOnly parseAunts input
+    let (Right aunts)   = A.parseOnly (A.many' parseAunt) input
     let (Right desired) = A.parseOnly (parseSample `A.sepBy` A.char ',') desiredAunt
     -- Part 1
     let matchingAunts1 = filter (auntMatchesSample1 desired) aunts
