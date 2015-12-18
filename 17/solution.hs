@@ -10,7 +10,7 @@ combinationsOfSize target (x:xs)
         restWithoutSelf = combinationsOfSize target xs
 
 main = do
-    input <- readFile "input.txt"
+    input <- getContents
     let containers   = sort $ map (read :: String -> Int) $ lines input
     let combinations = combinationsOfSize 150 containers
     -- Part 1
