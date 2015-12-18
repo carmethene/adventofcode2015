@@ -32,20 +32,41 @@ parseAunts :: A.Parser [Aunt]
 parseAunts = A.many' parseAunt
  
 -- Solver
-auntMatchesSample :: [Sample] -> Aunt -> Bool
-auntMatchesSample [] _ = True
-auntMatchesSample (x:xs) aunt@(_, as) = match && auntMatchesSample xs aunt where
+
+-- Part 1: Exact match
+auntMatchesSample1 :: [Sample] -> Aunt -> Bool
+auntMatchesSample1 [] _ = True
+auntMatchesSample1 (x:xs) aunt@(_, as) = match && auntMatchesSample1 xs aunt where
     (tc, tv) = x
     match = case lookup tc as of
       Nothing -> True
       Just av -> av == tv
 
+-- Part 2: Range match
+auntMatchesSample2 :: [Sample] -> Aunt -> Bool
+auntMatchesSample2 [] _ = True
+auntMatchesSample2 (x:xs) aunt@(_, as) = match && auntMatchesSample2 xs aunt where
+    (tc, tv) = x
+    match = case lookup tc as of
+      Nothing -> True
+      Just av -> case tc of
+                   "cats"        -> av >  tv
+                   "trees"       -> av >  tv
+                   "pomeranians" -> av <  tv
+                   "goldfish"    -> av <  tv
+                   otherwise     -> av == tv
+
+-- Target
 desiredAunt = "children: 3, cats: 7, samoyeds: 2, pomeranians: 3, akitas: 0, vizslas: 0, goldfish: 5, trees: 3, cars: 2, perfumes: 1"
 
 main = do
     input <- BS.readFile "input.txt"
     let (Right aunts)   = A.parseOnly parseAunts input
     let (Right desired) = A.parseOnly (parseSample `A.sepBy` A.char ',') desiredAunt
-    let matchingAunts = filter (auntMatchesSample desired) aunts
-    print $ "Matching aunt: " ++ show (fst (head matchingAunts))
+    -- Part 1
+    let matchingAunts1 = filter (auntMatchesSample1 desired) aunts
+    print $ "Matching aunt (1): " ++ show (fst (head matchingAunts1))
+    -- Part 2
+    let matchingAunts2 = filter (auntMatchesSample2 desired) aunts
+    print $ "Matching aunt (2): " ++ show (fst (head matchingAunts2))
 
