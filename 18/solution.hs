@@ -33,5 +33,5 @@ main = do
     input <- getContents
     let initialState = loadLights input
     let states = iterate animate initialState
-    print $ length (filter (== True) (toList $ states !! 101))
+    print $ length (filter id (toList $ states !! 100))
 
