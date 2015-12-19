@@ -28,9 +28,21 @@ animate m0 = matrix r c s where
            then n == 2 || n == 3
            else n == 3
 
+fixCorners :: State -> State
+fixCorners m0 = matrix r c s where
+    r = nrows m0
+    c = ncols m0
+    s (i, j) = let
+        cr = (i == 1 || i == r) && (j == 1 || j == c) in
+        cr || getElem i j m0
+ 
 main = do
     input <- getContents
     let initialState = loadLights input
-    let states = iterate animate initialState
-    print $ length (filter id (toList $ states !! 100))
+    -- Part 1
+    let states1 = iterate animate initialState
+    print $ "Num lights (1): " ++ show (length (filter id (toList $ states1 !! 100)))
+    -- Part 2
+    let states2 = iterate (fixCorners . animate) (fixCorners initialState)
+    print $ "Num lights (2): " ++ show (length (filter id (toList $ states2 !! 100)))
 
