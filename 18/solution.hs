@@ -1,4 +1,6 @@
-import Data.Matrix -- Types
+import Data.Matrix
+
+-- Types
 type State = Matrix Bool
 
 -- Parser
