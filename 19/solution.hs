@@ -62,7 +62,16 @@ expandMolecule rs = eachElement [] where
     replaceElem h e t = [h ++ m ++ t | (r, m) <- rs, r == e]
 
 contractMolecule :: [Replacement] -> Molecule -> [Molecule]
-contractMolecule rs = undefined
+contractMolecule rs m = filter (/= []) $ concatMap (eachElement [] m) rs where
+    eachElement :: [Element] -> [Element] -> Replacement -> [Molecule]
+    eachElement _  []     _ = []
+    eachElement xs (y:ys) r = contract xs (y:ys) r : eachElement (xs ++ [y]) ys r
+    contract :: Molecule -> Molecule -> Replacement -> Molecule
+    contract xs []     (e, (m:ms)) = []
+    contract xs ys     (e, [])     = xs ++ [e] ++ ys
+    contract xs (y:ys) (e, (m:ms)) = if y == m
+        then contract xs ys (e, ms)
+        else []
 
 stepsToMolecule :: [Replacement] -> [Molecule] -> Molecule -> Maybe Int
 stepsToMolecule rs es tgt = let
@@ -83,3 +92,4 @@ main = do
     -- Part 2
     let numSteps = stepsToMolecule rs es tgt
     print $ "Num steps:     " ++ show (fromJust numSteps)
+    -- print $ contractMolecule [("x", ["b","c","d"]), ("y", ["b","c","d"])] ["a","b","c","d","e"] 
