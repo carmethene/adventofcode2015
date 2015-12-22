@@ -9,7 +9,11 @@ import Data.List
 type Element     = String
 type Molecule    = [Element]
 type Replacement = (Element, Molecule)
-type Calibration = ([Replacement], Molecule)
+
+data Input = Input { getReplacements :: [Replacement]
+                   , getElectrons    :: [Molecule]
+                   , getTarget       :: Molecule
+                   } deriving (Show)
 
 -- Parser
 parseElement :: A.Parser Element
@@ -30,41 +34,34 @@ parseReplacement = do
     tgt <- parseMolecule
     return (src, tgt)
 
-parseEmpty :: A.Parser ()
-parseEmpty = do
+parseElectron :: A.Parser Molecule
+parseElectron = do
     A.char 'e'
     A.skipSpace
     A.string "=>"
     A.skipSpace
     parseMolecule
-    return ()
 
-parseCalibration :: A.Parser Calibration
-parseCalibration = do
+parseInput :: A.Parser Input
+parseInput = do
     replacements <- parseReplacement `A.sepBy` A.endOfLine
     A.skipSpace
-    parseEmpty `A.sepBy` A.endOfLine
+    electrons <- parseElectron `A.sepBy` A.endOfLine
     A.skipSpace
-    initial <- parseMolecule 
-    return (replacements, initial)
+    target <- parseMolecule 
+    return $ Input replacements electrons target
 
 -- Solver
-replacements :: [Replacement] -> Molecule -> [Molecule]
-replacements rs = replaceElem [] where
-    replaceElem :: [Element] -> [Element] ->[Molecule]
-    replaceElem xs []     = []
-    replaceElem xs (y:ys) = replaceEach xs y ys ++ replaceElem (xs ++ [y]) ys
-    replaceEach :: [Element] -> Element -> [Element] -> [Molecule]
-    replaceEach h e t     = [h ++ m ++ t | (r, m) <- rs, r == e]
+nextMolecules :: [Replacement] -> Molecule -> [Molecule]
+nextMolecules rs = eachElement [] where
+    eachElement :: [Element] -> [Element] -> [Molecule]
+    eachElement xs []     = []
+    eachElement xs (y:ys) = replaceElem xs y ys ++ eachElement (xs ++ [y]) ys
+    replaceElem :: [Element] -> Element -> [Element] -> [Molecule]
+    replaceElem h e t = [h ++ m ++ t | (r, m) <- rs, r == e]
 
 main = do
     input <- T.readFile "input.txt"
-    let (Right calibration) = A.parseOnly parseCalibration input
-    let (rs, m) = calibration
-    let uniqueReplacements = nub $ replacements rs m
+    let (Right (Input rs es m)) = A.parseOnly parseInput input
+    let uniqueReplacements = nub $ nextMolecules rs m
     print $ length uniqueReplacements
-
-    -- let rs = [("x", ["a","b","c"]), ("y",["d","e","f"])]
-    -- let m = ["w","x","y","z"]
-    -- let r = replacements rs m
-    -- print r
