@@ -53,18 +53,21 @@ parseInput = do
     return $ Input replacements electrons target
 
 -- Solver
-nextMolecules :: [Replacement] -> Molecule -> [Molecule]
-nextMolecules rs = eachElement [] where
+expandMolecule :: [Replacement] -> Molecule -> [Molecule]
+expandMolecule rs = eachElement [] where
     eachElement :: [Element] -> [Element] -> [Molecule]
     eachElement xs []     = []
     eachElement xs (y:ys) = replaceElem xs y ys ++ eachElement (xs ++ [y]) ys
     replaceElem :: [Element] -> Element -> [Element] -> [Molecule]
     replaceElem h e t = [h ++ m ++ t | (r, m) <- rs, r == e]
 
+contractMolecule :: [Replacement] -> Molecule -> [Molecule]
+contractMolecule rs = undefined
+
 stepsToMolecule :: [Replacement] -> [Molecule] -> Molecule -> Maybe Int
 stepsToMolecule rs es tgt = let
     molFilter   = (<= length tgt) . length
-    molecules   = es : [m | ms <- molecules, m <- map (nextMolecules rs) (filter molFilter ms)]
+    molecules   = es : [m | ms <- molecules, m <- map (expandMolecule rs) (filter molFilter ms)]
     steps       = zip [1..] molecules
     step        = find (\(i, ms) -> tgt `elem` ms) steps
     in case step of
@@ -75,7 +78,8 @@ main = do
     input <- T.readFile "input.txt"
     let Right (Input rs es tgt) = A.parseOnly parseInput input
     -- Part 1
-    let uniqueReplacements = nub $ nextMolecules rs tgt
+    let uniqueReplacements = nub $ expandMolecule rs tgt
     print $ "Num molecules: " ++ show (length uniqueReplacements)
     -- Part 2
-    print $ "Num steps:     " ++ show (fromJust (stepsToMolecule rs es tgt))
+    let numSteps = stepsToMolecule rs es tgt
+    print $ "Num steps:     " ++ show (fromJust numSteps)
