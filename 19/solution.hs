@@ -12,9 +12,10 @@ type Molecule    = [Element]
 type Replacement = (Element, Molecule)
 
 data Input = Input { getReplacements :: [Replacement]
-                   , getElectrons    :: [Molecule]
                    , getTarget       :: Molecule
                    } deriving (Show)
+
+electron = "e"
 
 -- Parser
 parseElement :: A.Parser Element
@@ -23,34 +24,29 @@ parseElement = let
     pClass cls = (: []) <$> A.satisfy (A.inClass cls) in
         (++) <$> pClass "A-Z" <*> A.option "" (pClass "a-z")
 
+parseElectron :: A.Parser Element
+parseElectron = do
+    A.char 'e'
+    return electron 
+
 parseMolecule :: A.Parser Molecule
 parseMolecule = A.many1 parseElement
 
 parseReplacement :: A.Parser Replacement
 parseReplacement = do
-    src <- parseElement
+    src <- parseElement <|> parseElectron
     A.skipSpace
     A.string "=>"
     A.skipSpace
     tgt <- parseMolecule
     return (src, tgt)
 
-parseElectron :: A.Parser Molecule
-parseElectron = do
-    A.char 'e'
-    A.skipSpace
-    A.string "=>"
-    A.skipSpace
-    parseMolecule
-
 parseInput :: A.Parser Input
 parseInput = do
     replacements <- parseReplacement `A.sepBy` A.endOfLine
     A.skipSpace
-    electrons <- parseElectron `A.sepBy` A.endOfLine
-    A.skipSpace
     target <- parseMolecule 
-    return $ Input replacements electrons target
+    return $ Input replacements target
 
 -- Solver
 expandMolecule :: [Replacement] -> Molecule -> [Molecule]
@@ -73,23 +69,21 @@ contractMolecule rs m = filter (/= []) $ concatMap (eachElement [] m) rs where
         then contract xs ys (e, ms)
         else []
 
-stepsToMolecule :: [Replacement] -> [Molecule] -> Molecule -> Maybe Int
-stepsToMolecule rs es tgt = let
-    molFilter   = (<= length tgt) . length
-    molecules   = es : [m | ms <- molecules, m <- map (expandMolecule rs) (filter molFilter ms)]
-    steps       = zip [1..] molecules
-    step        = find (\(i, ms) -> tgt `elem` ms) steps
+stepsToMolecule :: [Replacement] -> Molecule -> Maybe Int
+stepsToMolecule rs tgt = let
+    molecules   = [tgt] : [nub $ concatMap (contractMolecule rs) m | m <- molecules]
+    steps       = zip [0..] molecules
+    step        = find (\(i, ms) -> null ms || [electron] `elem` ms) steps
     in case step of
-        Just (i, _) -> Just i
-        Nothing     -> Nothing
+        Just (_, []) -> Nothing
+        Just (i, _)  -> Just i
 
 main = do
     input <- T.readFile "input.txt"
-    let Right (Input rs es tgt) = A.parseOnly parseInput input
+    let Right (Input rs tgt) = A.parseOnly parseInput input
     -- Part 1
     let uniqueReplacements = nub $ expandMolecule rs tgt
     print $ "Num molecules: " ++ show (length uniqueReplacements)
     -- Part 2
-    let numSteps = stepsToMolecule rs es tgt
+    let numSteps = stepsToMolecule rs tgt
     print $ "Num steps:     " ++ show (fromJust numSteps)
-    -- print $ contractMolecule [("x", ["b","c","d"]), ("y", ["b","c","d"])] ["a","b","c","d","e"] 
