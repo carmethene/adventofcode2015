@@ -4,6 +4,7 @@ import qualified Data.Attoparsec.Text as A
 import qualified Data.Text.IO as T
 import Control.Applicative
 import Data.List
+import Data.Maybe
 
 -- Types
 type Element     = String
@@ -60,8 +61,22 @@ nextMolecules rs = eachElement [] where
     replaceElem :: [Element] -> Element -> [Element] -> [Molecule]
     replaceElem h e t = [h ++ m ++ t | (r, m) <- rs, r == e]
 
+-- stepsToMolecule :: [Replacement] -> [Molecule] -> Molecule -> Maybe Int
+stepsToMolecule rs es tgt = let
+    molFilter   = (<= length tgt) . length
+    molecules   = es : [m | ms <- molecules, m <- map (nextMolecules rs) (filter molFilter ms)]
+    steps       = zip [0..] molecules
+    step        = find (\(i, ms) -> tgt `elem` ms) steps
+    in case step of
+        Just (i, _) -> Just i
+        Nothing     -> Nothing
+
 main = do
     input <- T.readFile "input.txt"
-    let (Right (Input rs es m)) = A.parseOnly parseInput input
-    let uniqueReplacements = nub $ nextMolecules rs m
-    print $ length uniqueReplacements
+    let Right (Input rs es tgt) = A.parseOnly parseInput input
+    -- Part 1
+    let uniqueReplacements = nub $ nextMolecules rs tgt
+    print $ "Num molecules: " ++ show (length uniqueReplacements)
+    -- Part 2
+    let nt = ["C","Rn","Al","Ar","Si","Al"]
+    print $ "Num steps:     " ++ show (fromJust (stepsToMolecule rs es tgt))
