@@ -63,9 +63,9 @@ contractMolecule rs m = filter (/= []) $ concatMap (eachElement [] m) rs where
     eachElement _  []     _ = []
     eachElement xs (y:ys) r = contract xs (y:ys) r : eachElement (xs ++ [y]) ys r
     contract :: Molecule -> Molecule -> Replacement -> Molecule
-    contract xs []     (e, (m:ms)) = []
-    contract xs ys     (e, [])     = xs ++ [e] ++ ys
-    contract xs (y:ys) (e, (m:ms)) = if y == m
+    contract xs []     (e, m:ms) = []
+    contract xs ys     (e, [])   = xs ++ [e] ++ ys
+    contract xs (y:ys) (e, m:ms) = if y == m
         then contract xs ys (e, ms)
         else []
 
