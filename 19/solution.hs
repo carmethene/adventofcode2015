@@ -61,11 +61,11 @@ nextMolecules rs = eachElement [] where
     replaceElem :: [Element] -> Element -> [Element] -> [Molecule]
     replaceElem h e t = [h ++ m ++ t | (r, m) <- rs, r == e]
 
--- stepsToMolecule :: [Replacement] -> [Molecule] -> Molecule -> Maybe Int
+stepsToMolecule :: [Replacement] -> [Molecule] -> Molecule -> Maybe Int
 stepsToMolecule rs es tgt = let
     molFilter   = (<= length tgt) . length
     molecules   = es : [m | ms <- molecules, m <- map (nextMolecules rs) (filter molFilter ms)]
-    steps       = zip [0..] molecules
+    steps       = zip [1..] molecules
     step        = find (\(i, ms) -> tgt `elem` ms) steps
     in case step of
         Just (i, _) -> Just i
@@ -78,5 +78,4 @@ main = do
     let uniqueReplacements = nub $ nextMolecules rs tgt
     print $ "Num molecules: " ++ show (length uniqueReplacements)
     -- Part 2
-    let nt = ["C","Rn","Al","Ar","Si","Al"]
     print $ "Num steps:     " ++ show (fromJust (stepsToMolecule rs es tgt))
