@@ -1,16 +1,16 @@
 import Control.Applicative
+import Data.List
 
-elves :: Int -> [Int]
-elves h = [e | e <- [1..h], h `mod` e == 0]
+isqrt :: Int -> Int
+isqrt = floor . sqrt . fromIntegral
+
+factors :: Int -> [Int]
+factors n = nub . concat $ [[x, q] | x <- [1..isqrt(n)], let (q, r) = divMod n x, r == 0]
 
 presents :: Int -> Int
-presents = (10 *) . sum . elves
-
-houses :: [(Int, Int)]
-houses = zip h (map presents h) where h = [1..]
+presents = (10 *) . sum . factors
 
 main = do
     target <- read <$> readFile "input.txt"
     -- Part 1
-    let housesAbove = dropWhile (\(n, p) -> p < target) houses
-    print $ head housesAbove
+    print $ findIndex (>= target) (map presents [0..])
