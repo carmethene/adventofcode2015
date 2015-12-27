@@ -86,12 +86,6 @@ solveMolecule rs cur
                 then lst ++ solveX
                 else solveMolecules lst xs
 
-debug = do
-    input <- T.readFile "input.txt"
-    let Right (Input rs tgt) = A.parseOnly parseInput input
-    let dbgMol = ["H", "P", "B", "F"]
-    print $ solveMolecule rs dbgMol
-
 main = do
     input <- T.readFile "input.txt"
     let Right (Input rs tgt) = A.parseOnly parseInput input
@@ -100,4 +94,4 @@ main = do
     print $ "Num molecules: " ++ show (length uniqueReplacements)
     -- Part 2
     let stepsToElectron = solveMolecule rs tgt
-    print $ "Num steps:     " ++ show ((length stepsToElectron) - 1)
+    print $ "Num steps:     " ++ show (length stepsToElectron - 1)
