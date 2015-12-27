@@ -59,7 +59,8 @@ expandMolecule rs = eachElement [] where
     replaceElem h e t = [h ++ m ++ t | (r, m) <- rs, r == e]
 
 contractMolecule :: [Replacement] -> Molecule -> [Molecule]
-contractMolecule rs m = sort nextMolecules where
+contractMolecule rs m = sortBy lengthSort nextMolecules where
+    lengthSort x y = compare (length x) (length y)
     nextMolecules :: [Molecule]
     nextMolecules = filter (/= []) $ concatMap (eachElement [] m) rs
     eachElement :: [Element] -> [Element] -> Replacement -> [Molecule]
