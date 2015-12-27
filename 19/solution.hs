@@ -87,7 +87,7 @@ solveMolecule rs cur
                 else solveMolecules lst xs
 
 main = do
-    input <- T.readFile "input.txt"
+    input <- T.getContents
     let Right (Input rs tgt) = A.parseOnly parseInput input
     -- Part 1
     let uniqueReplacements = nub $ expandMolecule rs tgt
