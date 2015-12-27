@@ -15,6 +15,7 @@ data Input = Input { getReplacements :: [Replacement]
                    , getTarget       :: Molecule
                    } deriving (Show)
 
+electron :: Element
 electron = "e"
 
 -- Parser
@@ -58,7 +59,9 @@ expandMolecule rs = eachElement [] where
     replaceElem h e t = [h ++ m ++ t | (r, m) <- rs, r == e]
 
 contractMolecule :: [Replacement] -> Molecule -> [Molecule]
-contractMolecule rs m = filter (/= []) $ concatMap (eachElement [] m) rs where
+contractMolecule rs m = sort nextMolecules where
+    nextMolecules :: [Molecule]
+    nextMolecules = filter (/= []) $ concatMap (eachElement [] m) rs
     eachElement :: [Element] -> [Element] -> Replacement -> [Molecule]
     eachElement _  []     _ = []
     eachElement xs (y:ys) r = contract xs (y:ys) r : eachElement (xs ++ [y]) ys r
@@ -69,14 +72,24 @@ contractMolecule rs m = filter (/= []) $ concatMap (eachElement [] m) rs where
         then contract xs ys (e, ms)
         else []
 
-stepsToMolecule :: [Replacement] -> Molecule -> Maybe Int
-stepsToMolecule rs tgt = let
-    molecules   = [tgt] : [nub $ concatMap (contractMolecule rs) m | m <- molecules]
-    steps       = zip [0..] molecules
-    step        = find (\(i, ms) -> null ms || [electron] `elem` ms) steps
-    in case step of
-        Just (_, []) -> Nothing
-        Just (i, _)  -> Just i
+solveMolecule :: [Replacement] -> Molecule -> [Molecule]
+solveMolecule rs cur
+    | cur == [electron] = [[electron]]
+    | otherwise         = solveMolecules [cur] nextMolecules where
+        nextMolecules = contractMolecule rs cur
+        solveMolecules :: [Molecule] -> [Molecule] -> [Molecule]
+        solveMolecules lst [] = []
+        solveMolecules lst (x:xs) = let
+            solveX = solveMolecule rs x in
+            if solveX /= []
+                then lst ++ solveX
+                else solveMolecules lst xs
+
+debug = do
+    input <- T.readFile "input.txt"
+    let Right (Input rs tgt) = A.parseOnly parseInput input
+    let dbgMol = ["H", "P", "B", "F"]
+    print $ solveMolecule rs dbgMol
 
 main = do
     input <- T.readFile "input.txt"
@@ -85,5 +98,5 @@ main = do
     let uniqueReplacements = nub $ expandMolecule rs tgt
     print $ "Num molecules: " ++ show (length uniqueReplacements)
     -- Part 2
-    let numSteps = stepsToMolecule rs tgt
-    print $ "Num steps:     " ++ show (fromJust numSteps)
+    let stepsToElectron = solveMolecule rs tgt
+    print $ "Num steps:     " ++ show ((length stepsToElectron) - 1)
