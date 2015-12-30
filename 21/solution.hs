@@ -1,5 +1,6 @@
 import Data.List
 import Data.Maybe
+import Control.Applicative
 
 -- Types
 data ItemAttrs = ItemAttrs { itemCost   :: Int
@@ -34,6 +35,23 @@ x `kills` y = deathIdx `mod` 2 == 0 where
             xd' = max (xd - ya) 1
             yh' = yh - xd'
 
+combinations :: Int -> [a] -> [[a]]
+combinations 0 _  = return []
+combinations n xs = do
+    y:xs' <- tails xs
+    ys <- combinations (n-1) xs'
+    return (y:ys)
+
+equip :: Character -> [Item] -> Character
+equip = foldr equipItem where
+    equipItem :: Item -> Character -> Character
+    equipItem (_, ItemAttrs ic id ia) (Character ch cd ca) = Character ch (cd + id) (ca + ia)
+
+equipmentCost :: [Item] -> Int
+equipmentCost xs = foldr itemSum 0 xs where
+    itemSum :: Item -> Int -> Int
+    itemSum (_, ItemAttrs ic _ _) tc = ic + tc
+
 -- The Shop
 weapons :: [Item]
 weapons = [ ("Dagger",     ItemAttrs  8 4 0)
@@ -60,11 +78,20 @@ rings = [ ("Damage +1",  ItemAttrs  25 1 0)
         , ("Defense +2", ItemAttrs  80 0 3)
         ]
 
+-- All possible loadouts
+loadouts :: [[Item]]
+loadouts = let
+    weaponOpts = combinations 1 weapons
+    armorOpts  = [] : combinations 1 armor
+    ringOpts   = [] : combinations 1 rings ++ combinations 2 rings in
+    (++) <$> ((++) <$> weaponOpts <*> armorOpts) <*> ringOpts
+
 -- Starting player
 player = Character 100 0 0
 
 main = do
     input <- readFile "input.txt"
     let boss = loadCharacter input
-    print $ player `kills` boss
+    let validLoadouts = filter (\l -> equip player l `kills` boss) loadouts
+    print $ "Cheapest winning equipment: " ++ show (minimum (map equipmentCost validLoadouts))
 
