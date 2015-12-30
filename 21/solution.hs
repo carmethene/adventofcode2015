@@ -92,6 +92,10 @@ player = Character 100 0 0
 main = do
     input <- readFile "input.txt"
     let boss = loadCharacter input
+    -- Part 1
     let validLoadouts = filter (\l -> equip player l `kills` boss) loadouts
-    print $ "Cheapest winning equipment: " ++ show (minimum (map equipmentCost validLoadouts))
+    print $ "Cheapest winning equipment:      " ++ show (minimum (map equipmentCost validLoadouts))
+    -- Part 2
+    let invalidLoadouts = filter (\l -> boss `kills` equip player l) loadouts
+    print $ "Most expensive losing equipment: " ++ show (maximum (map equipmentCost invalidLoadouts))
 
