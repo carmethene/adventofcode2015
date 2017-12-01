@@ -1,7 +1,7 @@
 # adventofcode
-Haskell solutions to http://adventofcode.com/
+Haskell solutions to Advent of Code 2015 (http://adventofcode.com/)
 
-The solutions take their input from stdin, so can be run as follows:
+The solutions take their input from stdin, and can be run as follows:
 
-ghc solution.hs && ./solution < input.txt
+``ghc solution.hs && ./solution < input.txt``
 
